@@ -63,6 +63,8 @@
 
 #define MEDIA_ENDPOINT_INTERFACE "org.bluez.MediaEndpoint1"
 
+#define ENABLE_A2DP_SOURCE_PROFILE 0
+
 struct a2dp_sep {
 	struct a2dp_server *server;
 	struct a2dp_endpoint *endpoint;
@@ -3314,6 +3316,7 @@ const char *a2dp_setup_remote_path(struct a2dp_setup *setup)
 	return NULL;
 }
 
+#if ENABLE_A2DP_SOURCE_PROFILE
 static int a2dp_source_probe(struct btd_service *service)
 {
 	struct btd_device *dev = btd_service_get_device(service);
@@ -3329,6 +3332,7 @@ static void a2dp_source_remove(struct btd_service *service)
 {
 	source_unregister(service);
 }
+#endif
 
 static int a2dp_sink_probe(struct btd_service *service)
 {
@@ -3344,6 +3348,7 @@ static void a2dp_sink_remove(struct btd_service *service)
 	sink_unregister(service);
 }
 
+#if ENABLE_A2DP_SOURCE_PROFILE
 static int a2dp_source_connect(struct btd_service *service)
 {
 	struct btd_device *dev = btd_service_get_device(service);
@@ -3375,6 +3380,7 @@ static int a2dp_source_disconnect(struct btd_service *service)
 
 	return source_disconnect(service);
 }
+#endif
 
 static int a2dp_sink_connect(struct btd_service *service)
 {
@@ -3455,6 +3461,7 @@ static void a2dp_source_server_remove(struct btd_profile *p,
 	a2dp_server_unregister(server);
 }
 
+#if ENABLE_A2DP_SOURCE_PROFILE
 static int a2dp_sink_server_probe(struct btd_profile *p,
 						struct btd_adapter *adapter)
 {
@@ -3499,6 +3506,7 @@ static void a2dp_sink_server_remove(struct btd_profile *p,
 
 	a2dp_server_unregister(server);
 }
+#endif
 
 static int media_server_probe(struct btd_adapter *adapter)
 {
@@ -3514,6 +3522,7 @@ static void media_server_remove(struct btd_adapter *adapter)
 	media_unregister(adapter);
 }
 
+#if ENABLE_A2DP_SOURCE_PROFILE
 static struct btd_profile a2dp_source_profile = {
 	.name		= "a2dp-source",
 	.priority	= BTD_PROFILE_PRIORITY_MEDIUM,
@@ -3529,6 +3538,7 @@ static struct btd_profile a2dp_source_profile = {
 	.adapter_probe	= a2dp_sink_server_probe,
 	.adapter_remove	= a2dp_sink_server_remove,
 };
+#endif
 
 static struct btd_profile a2dp_sink_profile = {
 	.name		= "a2dp-sink",
@@ -3555,7 +3565,9 @@ static struct btd_adapter_driver media_driver = {
 static int a2dp_init(void)
 {
 	btd_register_adapter_driver(&media_driver);
+#if ENABLE_A2DP_SOURCE_PROFILE
 	btd_profile_register(&a2dp_source_profile);
+#endif
 	btd_profile_register(&a2dp_sink_profile);
 
 	return 0;
@@ -3564,7 +3576,9 @@ static int a2dp_init(void)
 static void a2dp_exit(void)
 {
 	btd_unregister_adapter_driver(&media_driver);
+#if ENABLE_A2DP_SOURCE_PROFILE
 	btd_profile_unregister(&a2dp_source_profile);
+#endif
 	btd_profile_unregister(&a2dp_sink_profile);
 }
 
